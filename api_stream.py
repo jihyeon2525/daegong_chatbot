@@ -20,6 +20,8 @@ from konlpy.tag import Kkma
 from datetime import datetime
 import os
 
+MAX_CHAT_HISTORY = 5
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -84,7 +86,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
 
         year = datetime.now().year
         history = "\n".join(f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history[-2:])
-        #print(history)
+        print(history)
         template = '''
         너는 대구공업고등학교 총동문회 80년사 챗봇이야. 답변은 한국어 높임말로, '-습니다'를 활용한 어미를 사용해 일관되고 친절한 말투를 써.
         제공받은 데이터와 관련된 질문만 답변해줘. 올해는 {year}년이야.
@@ -115,6 +117,9 @@ async def send_message(content: str) -> AsyncIterable[str]:
 
         response = await task
         chat_history.append({"question": content, "answer": response})
+        if len(chat_history) > MAX_CHAT_HISTORY:
+            chat_history.pop(0)
+            
     except Exception as e:
         yield "죄송합니다. 지금은 답변해 드릴 수 없습니다."
         print(f"Caught exception: {e}")
@@ -124,5 +129,4 @@ async def send_message(content: str) -> AsyncIterable[str]:
 @app.post("/stream_chat/")
 async def stream_chat(message: Message):
     generator = send_message(message.content)
-    return StreamingResponse(generator, media_type="text/event-stream")
-    
+    return StreamingResponse(generator, media_type="text/event-stream") 
