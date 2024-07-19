@@ -10,7 +10,10 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_teddynote.retrievers import KkmaBM25Retriever
 from langchain.retrievers import EnsembleRetriever
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from starlette.requests import Request
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
@@ -30,6 +33,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name = "static")
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
@@ -129,4 +136,8 @@ async def send_message(content: str) -> AsyncIterable[str]:
 @app.post("/stream_chat/")
 async def stream_chat(message: Message):
     generator = send_message(message.content)
-    return StreamingResponse(generator, media_type="text/event-stream") 
+    return StreamingResponse(generator, media_type="text/event-stream")
+
+@app.get("/", response_class=HTMLResponse)
+async def read_index(request: Request):
+    return templates.TemplateResponse("index.html", {"request":request})
