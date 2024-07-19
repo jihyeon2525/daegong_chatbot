@@ -131,7 +131,7 @@
             appendMessage(message, 'user-message');
             messageElement.value = "";
 
-            const response = await fetch('https://1.255.226.20:6677/stream_chat/', {
+            const response = await fetch('http://localhost:6677/stream_chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -145,26 +145,18 @@
 
             const botMessageDiv = appendMessage('', 'bot-message');
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    if (buffer) {
-                        botMessageDiv.innerHTML += buffer;
-                    }
-                    break;
-                }
+            reader.read().then(function processResult(result) {
+                if (result.done) return;
 
-                buffer += decoder.decode(value, { stream: true });
+                let token = decoder.decode(result.value, { stream: true });
+                buffer += token;
+                
+                botMessageDiv.innerHTML += token.replace(/\n/g, '<br>');
 
-                const lastSentenceEnd = Math.max(buffer.lastIndexOf('.'), buffer.lastIndexOf('!'), buffer.lastIndexOf('?'));
+                botMessageDiv.scrollIntoView();
+                return reader.read().then(processResult);
+            });
 
-                if (lastSentenceEnd !== -1) {
-                    const completeSentence = buffer.slice(0, lastSentenceEnd + 1);
-                    buffer = buffer.slice(lastSentenceEnd + 1);
-                    botMessageDiv.innerHTML += completeSentence + "<br>";
-                    botMessageDiv.scrollIntoView();
-                }
-            }
         }
 
         function appendMessage(text, className) {

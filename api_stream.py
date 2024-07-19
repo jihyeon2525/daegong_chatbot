@@ -88,7 +88,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
         history = "\n".join(f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history[-2:])
         print(history)
         template = '''
-        너는 대구공업고등학교 총동문회 80년사 챗봇이야. 답변은 한국어 높임말로, '-습니다'를 활용한 어미를 사용해 일관되고 친절한 말투를 써.
+        너는 대구공업고등학교 총동문회 80년사 챗봇이야. 답변은 한국어 높임말로 써. 일관되고 친절한 말투를 써.
         제공받은 데이터와 관련된 질문만 답변해줘. 올해는 {year}년이야.
         {context}
         Chat history: {history}
