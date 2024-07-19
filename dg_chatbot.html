@@ -131,7 +131,7 @@
             appendMessage(message, 'user-message');
             messageElement.value = "";
 
-            const response = await fetch('http://localhost:6677/stream_chat/', {
+            const response = await fetch('http://localhost:5555/stream_chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
