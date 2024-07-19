@@ -13,4 +13,4 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["uvicorn", "api_stream:app", "--host", "0.0.0.0", "--port", "6677"]
+CMD ["uvicorn", "api_stream:app", "--port", "6677"]
