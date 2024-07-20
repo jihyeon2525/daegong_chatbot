@@ -132,7 +132,7 @@
             appendMessage(message, 'user-message');
             messageElement.value = "";
 
-            const response = await fetch('https://dg-chatbot.flash21.com:6677/stream_chat/', {
+            const response = await fetch('https://dg-chatbot.flash21.com/stream_chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
