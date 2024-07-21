@@ -37,6 +37,7 @@ jobs:
         tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        github-token: ${{ secrets.PAT }}
     
   deploy:
     runs-on: ubuntu-latest
