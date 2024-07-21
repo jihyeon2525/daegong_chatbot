@@ -27,14 +27,13 @@ jobs:
         echo ${{ secrets.PAT }} | docker login ${{ env.REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
     - name: Build and Push Docker Image
-      uses: docker/build-push-action@v6.4.1
+      uses: docker/build-push-action@v6
       with:
         context: .
-        file: ./Dockerfile
         push: true
+        tags: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
         cache-from: type=gha
-        cache-to: type=gha, mode=max
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        cache-to: type=gha,mode=max
     
   deploy:
     runs-on: ubuntu-latest
