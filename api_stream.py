@@ -57,11 +57,11 @@ vector_db = Chroma(
 
 loader = TextLoader('대구공고전문.txt', encoding='utf-8')
 content = loader.load()[0].page_content
-text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1500, chunk_overlap = 200, separators = '\n')
+text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000, chunk_overlap = 200, separators = '\n')
 splitted_docs = text_splitter.split_text(content)
 
-kbm25_retriever = KkmaBM25Retriever.from_texts(splitted_docs, k=3)
-embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+kbm25_retriever = KkmaBM25Retriever.from_texts(splitted_docs, k=4)
+embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 4})
 ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.4, 0.6])
 
 class Message(BaseModel):
@@ -79,7 +79,8 @@ async def send_message(content: str) -> AsyncIterable[str]:
         tok_query = kkma.nouns(content)
         
         docs = ensemble_retriever.invoke(' '.join(tok_query))
-        new_docs = list(doc.page_content for doc in docs)
+        new_docs = [f"<Doc{i+1}>. {doc.page_content}" for i, doc in enumerate(docs)]
+        #print(new_docs)
         
         if not new_docs:
           raise NoDocumentsRetrievedError("No documents retrieved.")
@@ -93,12 +94,12 @@ async def send_message(content: str) -> AsyncIterable[str]:
 
         year = datetime.now().year
         history = "\n".join(f"Q: {item['question']}\nA: {item['answer']}" for item in chat_history[-2:])
-        print(history)
+        #print(history)
         template = '''
         너는 대구공업고등학교 80년사 책의 내용과 관련된 질문에 답변하는 챗봇이야. 답변은 한국어 높임말로 써. 일관되고 친절한 말투를 써.
-        주어진 데이터와 관련된 질문에만 답변해줘. 주어진 데이터에는 질문과 관련없는 내용도 있을 수도 있기 때문에 확실한 내용만 답변해줘. 특히 사람 이름 관련해서 정확한 정보만 가져와. 올해는 {year}년이야.
-        DON'T MAKE UP THE DATA AND ANSWER.
-        Data relevant to the question: {context}
+        데이터에는 질문과 관련없는 내용도 있을 수 있기 때문에 확실한 내용만 답변해줘. 특정 사람에 대한 질문이면 확실히 사람을 구별해서 답변해줘. 올해는 {year}년이야.
+        DON'T MAKE UP THE ANSWER.
+        Data: {context}
         Chat history: {history}
         Question: {question}
         Answer:

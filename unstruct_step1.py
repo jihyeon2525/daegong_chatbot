@@ -17,7 +17,7 @@ class Vec():
         try:
             loader = TextLoader('대구공고전문.txt', encoding='utf-8')
             pages = loader.load()
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size = 2000, chunk_overlap = 200, separators = '\n')
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000, chunk_overlap = 200, separators = '\n')
             texts = text_splitter.split_documents(pages)
 
             shutil.rmtree('vector_db', ignore_errors=True)

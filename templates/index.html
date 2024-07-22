@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8">
+    <title>대구공업고등학교 80년사 챗봇</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -104,9 +105,8 @@
 </head>
 
 <body>
-
     <div class="chat-container">
-        <h1>대구공업고등학교 챗봇</h1>
+        <h1>대구공업고등학교 80년사 챗봇</h1>
         <div id="result"></div>
 
         <div class="input-container">
@@ -128,11 +128,10 @@
             const message = messageElement.value.trim();
             if (!message) return;
 
-            // 사용자 메시지를 화면에 추가
             appendMessage(message, 'user-message');
             messageElement.value = "";
 
-            const response = await fetch('https://dg-chatbot.flash21.com/stream_chat/', {
+            const response = await fetch('http://dg-chatbot.flash21.com/stream_chat/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -169,7 +168,6 @@
             return messageDiv;
         }
     </script>
-
 </body>
 
 </html>
