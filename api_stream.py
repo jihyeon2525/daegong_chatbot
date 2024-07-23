@@ -83,12 +83,12 @@ async def send_message(content: str) -> AsyncIterable[str]:
             question = content + ' ' + ' '.join(tok_query)
         else:
             question = ' '.join(tok_query)
-        print(question)
+        #print(question)
 
         docs = ensemble_retriever.invoke(question)
         new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
         filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
-        print(filtered_docs)
+        #print(filtered_docs)
         
         if not new_docs:
           raise NoDocumentsRetrievedError("No documents retrieved.")
