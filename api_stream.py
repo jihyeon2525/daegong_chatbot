@@ -21,7 +21,7 @@ from kiwipiepy import Kiwi
 from datetime import datetime
 import os
 
-MAX_CHAT_HISTORY = 5
+MAX_CHAT_HISTORY = 3
 
 app = FastAPI()
 app.add_middleware(
@@ -78,39 +78,60 @@ async def send_message(content: str) -> AsyncIterable[str]:
         callback = AsyncIteratorCallbackHandler()
         
         tok_query = noun_extractor(content)
-        if len(tok_query) == 0:
-            tok_query = chat_history[-1]['tok_question']
-            question = content + ' ' + ' '.join(tok_query)
+        if chat_history:
+            if tok_query:
+                question = ' '.join(tok_query)
+                docs = ensemble_retriever.invoke(question)
+                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
+                if not new_docs:
+                    raise NoDocumentsRetrievedError("No documents retrieved.")
+                filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
+                history = "\n".join(f"Old Question: {item['question']}\nOld Answer: {item['answer']}" for item in chat_history[-1:])
+                print("history 있고 키워드 있음")
+            else:
+                question = content
+                filtered_docs = 'None'
+                history = "\n".join(f"Old Question: {item['question']}\nOld Retrieved Data: {item['docs']}" for item in chat_history[-1:])
+                print("history 있고 키워드 없음")
         else:
-            question = ' '.join(tok_query)
+            if tok_query:
+                question = ' '.join(tok_query)
+                docs = ensemble_retriever.invoke(question)
+                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
+                if not new_docs:
+                    raise NoDocumentsRetrievedError("No documents retrieved.")
+                filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
+                history = 'None'
+                print("history 없고 키워드 있음")
+            else:
+                question = content
+                filtered_docs = 'None'
+                history = 'None'
+                print("history 없고 키워드 없음")
+        #print(tok_query)
         #print(question)
-
-        docs = ensemble_retriever.invoke(question)
-        new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
-        filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
         #print(filtered_docs)
-        
-        if not new_docs:
-          raise NoDocumentsRetrievedError("No documents retrieved.")
+        #print(history)
         
         model = ChatOpenAI(
             streaming=True,
             verbose=True,
             callbacks=[callback],
-            temperature=0
+            temperature=0.1
         )
 
         year = datetime.now().year
-        history = "\n".join(f"Q: {item['question']}\nA(참고): {item['answer']}" for item in chat_history[-2:])
-        #print(history)
         template = '''
-        너는 대구공업고등학교 80년사 책의 내용과 관련된 질문에 답변하는 챗봇이야. 답변은 한국어 높임말로 써. 일관되고 친절한 말투를 써.
-        데이터에는 질문과 관련없는 내용도 포함되어 있기 때문에 질문에 대한 확실한 답만을 찾아 답변해줘. 특정 사람과 관련된 질문이면 성과 이름이 "완벽히" 일치하는 자료를 찾아. 같은 이름을 가진 사람이 있어도 동명이인일 수 있기 떄문에 디테일을 보고 구별해서 알려줘(회수, 기수, 분야, 직업). 올해는 {year}년이야.
-        DON'T MAKE UP THE ANSWER. Don't repeat the answer from chat history.
-        Data(책 내용의 일부, don't connect docs with different numbers.): {context}
-        Chat history: {history}
-        Question: {question}
-        Answer:
+        이 챗봇은 대구공업고등학교 100년사 책의 내용과 관련된 질문에 답변하는 안내원입니다. 답변은 한국어 "높임말"로 합니다.
+        Read Retrieved Data and Chat history before answering question. DON'T MAKE UP THE ANSWER.
+        Never repeat the Old Answer from chat history. 
+        특정 사람과 관련된 질문이면 이름, 회수, 기수, 분야(전기, 기계, 방직, 화학, 화공, 건축, 자동차, 토목, 섬유), 직업 등을 보고 엄격하게 구분합니다. (예를 들어, 이진호(섬유)와 이진호(방직)은 다른 사람입니다.) 올해는 {year}년입니다.
+        
+        Retrieved Data(fractions of the book): {context}
+        New Question: {question}
+        Chat history:
+        {history}
+        New Answer:
         '''
 
         prompt = PromptTemplate(
@@ -133,7 +154,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
             yield token
 
         response = await task
-        chat_history.append({"question": content, "tok_question": tok_query, "answer": response})
+        chat_history.append({"question": content, "tok_question": tok_query, "docs": filtered_docs, "answer": response})
         if len(chat_history) > MAX_CHAT_HISTORY:
             chat_history.pop(0)
             
