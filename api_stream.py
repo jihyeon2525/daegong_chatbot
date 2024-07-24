@@ -62,7 +62,7 @@ def noun_extractor(text):
             results.append(token)
     return results
 
-kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=4)
+kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=3)
 embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 2})
 ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.6, 0.4])
 
@@ -87,12 +87,12 @@ async def send_message(content: str) -> AsyncIterable[str]:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
                 filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
                 history = "\n".join(f"Old Question: {item['question']}\nOld Answer: {item['answer']}" for item in chat_history[-1:])
-                print("history 있고 키워드 있음")
+                #print("history 있고 키워드 있음")
             else:
                 question = content
                 filtered_docs = 'None'
                 history = "\n".join(f"Old Question: {item['question']}\nOld Retrieved Data: {item['docs']}" for item in chat_history[-1:])
-                print("history 있고 키워드 없음")
+                #print("history 있고 키워드 없음")
         else:
             if tok_query:
                 question = ' '.join(tok_query)
@@ -102,12 +102,12 @@ async def send_message(content: str) -> AsyncIterable[str]:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
                 filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
                 history = 'None'
-                print("history 없고 키워드 있음")
+                #print("history 없고 키워드 있음")
             else:
                 question = content
                 filtered_docs = 'None'
                 history = 'None'
-                print("history 없고 키워드 없음")
+                #print("history 없고 키워드 없음")
         #print(tok_query)
         #print(question)
         #print(filtered_docs)
@@ -123,7 +123,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
         year = datetime.now().year
         template = '''
         이 챗봇은 대구공업고등학교 100년사 책의 내용과 관련된 질문에 답변하는 안내원입니다. 답변은 한국어 "높임말"로 합니다.
-        Read Retrieved Data and Chat history before answering question. DON'T MAKE UP THE ANSWER.
+        Read Retrieved Data and Chat history before answering question. DON'T MAKE UP THE ANSWER. Chat history가 있는 경우 그 내용을 통해 질문의 맥락을 이해해.
         Never repeat the Old Answer from chat history. 
         특정 사람과 관련된 질문이면 이름, 회수, 기수, 분야(전기, 기계, 방직, 화학, 화공, 건축, 자동차, 토목, 섬유), 직업 등을 보고 엄격하게 구분합니다. (예를 들어, 이진호(섬유)와 이진호(방직)은 다른 사람입니다.) 올해는 {year}년입니다.
         
