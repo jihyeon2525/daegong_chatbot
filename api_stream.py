@@ -21,7 +21,7 @@ from kiwipiepy import Kiwi
 from datetime import datetime
 import os
 
-MAX_CHAT_HISTORY = 3
+MAX_CHAT_HISTORY = 2
 
 app = FastAPI()
 app.add_middleware(
