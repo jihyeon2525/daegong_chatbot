@@ -34,11 +34,10 @@ class Vec():
         except Exception as e:
             return e
 
-'''내용 업데이트 시 실행       
+"""#내용 업데이트 시 실행       
 vec = Vec()
 errmsg = vec.extractData()
 if errmsg:
     print(errmsg)
 else:
-    print(f"vector_db 업데이트 완료. ({datetime.now()})")
-'''
+    print(f"vector_db 업데이트 완료. ({datetime.now()})")"""

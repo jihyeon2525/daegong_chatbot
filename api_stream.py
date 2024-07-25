@@ -54,17 +54,21 @@ vector_db = Chroma(
 )
 
 kiwi = Kiwi()
-def noun_extractor(text):
-    results = []
+def analyze_text(text):
+    nouns = []
+    key_nouns = []
+    particles = ['은', '는', '에', '이', '가', '의']
     result = kiwi.analyze(text)
     for token, pos, _, _ in result[0][0]:
-        if len(token) != 1 and pos=='NNG' or pos=='NNP' or pos=='NR' or pos=="XR" or pos=='SL' or pos=='SH' or pos=='SN':
-            results.append(token)
-    return results
+        if len(token) != 1 and pos in ['NNG', 'NNP', 'NR', 'XR', 'SL', 'SH', 'SN']:
+            nouns.append(token)
+        elif pos in ['JKS', 'JKB', 'JX', 'JKG'] and (token in particles) and nouns:
+            key_nouns.append(nouns[-1])
+    return nouns, key_nouns
 
 kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=3)
-embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 2})
-ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.6, 0.4])
+embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
 
 class Message(BaseModel):
     content: str
@@ -77,7 +81,12 @@ async def send_message(content: str) -> AsyncIterable[str]:
     try:
         callback = AsyncIteratorCallbackHandler()
         
-        tok_query = noun_extractor(content)
+        tok_query, key_nouns = analyze_text(content)
+        #print("tok_query:", tok_query)
+        #print("key1:",key_nouns)
+        if not key_nouns:
+            key_nouns = tok_query
+        #print("key2:",key_nouns)
         if chat_history:
             if tok_query:
                 question = ' '.join(tok_query)
@@ -85,13 +94,13 @@ async def send_message(content: str) -> AsyncIterable[str]:
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
-                history = "\n".join(f"Old Question: {item['question']}\nOld Answer: {item['answer']}" for item in chat_history[-1:])
+                filtered_docs = [f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)]
+                history = "\n".join(f"Old Question: {item['question']}" for item in chat_history[-1:])
                 #print("history 있고 키워드 있음")
             else:
                 question = content
                 filtered_docs = 'None'
-                history = "\n".join(f"Old Question: {item['question']}\nOld Retrieved Data: {item['docs']}" for item in chat_history[-1:])
+                history = "\n".join(f"Old Question: {item['question']}\nOld Data: {item['docs']}" for item in chat_history[-1:])
                 #print("history 있고 키워드 없음")
         else:
             if tok_query:
@@ -100,7 +109,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = [f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in tok_query)]
+                filtered_docs = [f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)]
                 history = 'None'
                 #print("history 없고 키워드 있음")
             else:
@@ -117,28 +126,30 @@ async def send_message(content: str) -> AsyncIterable[str]:
             streaming=True,
             verbose=True,
             callbacks=[callback],
-            temperature=0.1
+            temperature=0.1,
+            max_tokens=1500
         )
 
         year = datetime.now().year
         template = '''
         이 챗봇은 대구공업고등학교 100년사 책의 내용과 관련된 질문에 답변하는 안내원입니다. 답변은 한국어 높임말을 사용합니다.
-        Read chat history to answer to follow-up question. But don't repeat the Old Answer for the answer.
-        이름 옆의 괄호를 이용해 동명이인을 구별하고, 질문에 연관된 동명이인은 모두 답변합니다.
-        Utilize all data you have to answer to the question.
+        Read chat history to answer follow-up question.
+        이름 옆의 괄호 내용를 이용해 동명이인을 구별하고, 질문에 연관된 동명이인은 모두 답변합니다.
+        Answer the user's New Question using the following data. Individual docs may or may not be related to the question.
+        Don't make up the answer.
 
         Year: {year}
         Chat history:
         {history}
-        Retrieved Data(fractions of the book): {context}
+        Data(fractions of book): {context}
         New Question: {question}
         New Answer:
         '''
 
         prompt = PromptTemplate(
                     input_variables=[
-                        "context",
                         "year",
+                        "context",
                         "question",
                         "history"
                     ],
@@ -155,7 +166,7 @@ async def send_message(content: str) -> AsyncIterable[str]:
             yield token
 
         response = await task
-        chat_history.append({"question": content, "tok_question": tok_query, "docs": filtered_docs, "answer": response})
+        chat_history.append({"question": content, "docs": filtered_docs})
         if len(chat_history) > MAX_CHAT_HISTORY:
             chat_history.pop(0)
             
