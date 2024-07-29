@@ -1,6 +1,6 @@
 from unstruct_step1 import Vec, documents
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -71,7 +71,10 @@ kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=3)
 embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
 
-global_chat_history = {'question': '', 'docs': ''}
+global_chat_history = []
+if len(global_chat_history)>10:
+    global_chat_history.pop(0)
+#global_chat_history = {'question': '', 'docs': ''}
 
 class Message(BaseModel):
     content: str
@@ -162,7 +165,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
         chat_history['question'] = content
         chat_history['docs'] = filtered_docs
         global global_chat_history
-        global_chat_history = chat_history
+        global_chat_history.append(chat_history)
         
     except Exception as e:
         print(e)
@@ -180,5 +183,8 @@ async def stream_chat(message: Message):
     return StreamingResponse(generator, media_type="text/event-stream")
 
 @app.get("/get_chat_history/")
-async def get_chat_history():
-    return JSONResponse(content=global_chat_history)
+async def get_chat_history(question: str = Query(..., description="The question to search for in chat history")):
+    for entry in global_chat_history:
+        if entry["question"] == question:
+            return JSONResponse(content=entry)
+    return JSONResponse(content={"question": "", "docs": ""}, status_code=404)
