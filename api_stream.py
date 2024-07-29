@@ -1,27 +1,25 @@
 from unstruct_step1 import Vec, documents
 import asyncio
-from typing import AsyncIterable
+from typing import AsyncIterable, Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_teddynote.retrievers import KiwiBM25Retriever
 from langchain.retrievers import EnsembleRetriever
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from starlette.requests import Request
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from pydantic import BaseModel
 from kiwipiepy import Kiwi
 from datetime import datetime
 import os
-
-MAX_CHAT_HISTORY = 2
 
 app = FastAPI()
 app.add_middleware(
@@ -70,38 +68,37 @@ kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=3)
 embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
 
+global_chat_history = {'question': '', 'docs': ''}
+
 class Message(BaseModel):
     content: str
+    chat_history: Dict[str, str]
 
 class NoDocumentsRetrievedError(Exception):
     pass
 
-chat_history = []
-async def send_message(content: str) -> AsyncIterable[str]:
+async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncIterable[str]:
     try:
         callback = AsyncIteratorCallbackHandler()
-        
+
+        # Process the message and history
         tok_query, key_nouns = analyze_text(content)
-        #print("tok_query:", tok_query)
-        #print("key1:",key_nouns)
         if not key_nouns:
             key_nouns = tok_query
-        #print("key2:",key_nouns)
-        if chat_history:
+
+        if chat_history.get('question'):
             if tok_query:
                 question = ' '.join(tok_query)
                 docs = ensemble_retriever.invoke(question)
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = [f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)]
-                history = "\n".join(f"Old Question: {item['question']}" for item in chat_history[-1:])
-                #print("history 있고 키워드 있음")
+                filtered_docs = " ".join([f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                history_text = f"Old Question: {chat_history.get('question', '')}"
             else:
                 question = content
                 filtered_docs = 'None'
-                history = "\n".join(f"Old Question: {item['question']}\nOld Data: {item['docs']}" for item in chat_history[-1:])
-                #print("history 있고 키워드 없음")
+                history_text = f"Old Question: {chat_history.get('question', '')}\nOld Data: {chat_history.get('docs', '')}"
         else:
             if tok_query:
                 question = ' '.join(tok_query)
@@ -109,19 +106,13 @@ async def send_message(content: str) -> AsyncIterable[str]:
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = [f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)]
-                history = 'None'
-                #print("history 없고 키워드 있음")
+                filtered_docs = " ".join([f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                history_text = 'None'
             else:
                 question = content
                 filtered_docs = 'None'
-                history = 'None'
-                #print("history 없고 키워드 없음")
-        #print(tok_query)
-        #print(question)
-        #print(filtered_docs)
-        #print(history)
-        
+                history_text = 'None'
+
         model = ChatOpenAI(
             streaming=True,
             verbose=True,
@@ -140,47 +131,52 @@ async def send_message(content: str) -> AsyncIterable[str]:
 
         Year: {year}
         Chat history:
-        {history}
+        {history_text}
         Data(fractions of book): {context}
         New Question: {question}
         New Answer:
         '''
 
         prompt = PromptTemplate(
-                    input_variables=[
-                        "year",
-                        "context",
-                        "question",
-                        "history"
-                    ],
-                    template=template
-                )
-        
+            input_variables=[
+                "year",
+                "context",
+                "question",
+                "history_text"
+            ],
+            template=template
+        )
+
         chain = prompt | model | StrOutputParser()
         
         task = asyncio.create_task(
-            chain.ainvoke({"year": year, "context": filtered_docs, "question": content, "history": history})
+            chain.ainvoke({"year": year, "context": filtered_docs, "question": content, "history_text": history_text})
         )
 
         async for token in callback.aiter():
             yield token
 
         response = await task
-        chat_history.append({"question": content, "docs": filtered_docs})
-        if len(chat_history) > MAX_CHAT_HISTORY:
-            chat_history.pop(0)
-            
+        chat_history['question'] = content
+        chat_history['docs'] = filtered_docs
+        global global_chat_history
+        global_chat_history = chat_history
+        
     except Exception as e:
+        print(e)
         yield "죄송합니다. 지금은 답변해 드릴 수 없습니다."
-        print(f"Caught exception: {e}")
     finally:
         callback.done.set()
-
-@app.post("/stream_chat/")
-async def stream_chat(message: Message):
-    generator = send_message(message.content)
-    return StreamingResponse(generator, media_type="text/event-stream")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index(request: Request):
     return templates.TemplateResponse("index.html", {"request":request})
+
+@app.post("/stream_chat/")
+async def stream_chat(message: Message):
+    generator = send_message(message.content, message.chat_history)
+    return StreamingResponse(generator, media_type="text/event-stream")
+
+@app.get("/get_chat_history/")
+async def get_chat_history():
+    return JSONResponse(content=global_chat_history)
