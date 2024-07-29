@@ -138,7 +138,7 @@
         <div id="result"></div>
         <div class="input-container">
             <input type="text" id="message" placeholder="질문을 입력하세요." onkeydown="if (event.key === 'Enter') sendMessage()">
-            <img src="static//free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
+            <img id="sendButton" src="static//free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
         </div>
         <div class="notice">챗봇은 실수를 할 수 있습니다. 정확한 정보는 원본을 확인해 주세요.</div>
     </div>
@@ -152,11 +152,14 @@
 
         async function sendMessage() {
             const messageElement = document.getElementById("message");
+            const sendButton = document.getElementById("sendButton");
             const message = messageElement.value.trim();
             if (!message) return;
 
             appendMessage(message, 'user-message');
             messageElement.value = "";
+            sendButton.style.pointerEvents = 'none';
+            messageElement.onkeydown = null;
 
             const botMessageDiv = appendMessage('<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>', 'bot-message');
 
@@ -172,31 +175,24 @@
                     botMessageDiv.innerHTML = buffer.replace(/\n/g, '<br>');
                     botMessageDiv.scrollIntoView();
                 }
-
-                
             };
 
-            async function updateChatHistory() {
+            async function getChatHistory() {
                 try {
-                    const response = await fetch('http://dg-chatbot.flash21.com:6677/update_chat_history/', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(chatHistory)
-                    });
-
+                    const response = await fetch('https://dg-chatbot.flash21.com/get_chat_history/');
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
-
                     const data = await response.json();
                     chatHistory = data;
+                    console.log(chatHistory)
                 } catch (error) {
-                    console.error('Error updating chat history:', error);
+                    console.error('Error fetching chat history:', error);
                 }
             }
 
             try {
-                const response = await fetch('http://localhost:6677/stream_chat/', {
+                const response = await fetch('http://dg-chatbot.flash21.com/stream_chat/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: message, chat_history: chatHistory })
@@ -205,14 +201,17 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                
                 await handleStreamingResponse(response.body);
+                await getChatHistory();
             } catch (error) {
                 botMessageDiv.innerHTML = "죄송합니다. 지금은 답변해 드릴 수 없습니다.";
                 console.error('Error:', error);
+            } finally {
+                sendButton.style.pointerEvents = 'auto';
+                messageElement.onkeydown = (event) => {
+                    if (event.key === 'Enter') sendMessage();
+                };
             }
-
-            await updateChatHistory();
         }
 
         function appendMessage(text, className) {

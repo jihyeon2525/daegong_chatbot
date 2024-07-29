@@ -1,24 +1,27 @@
 from unstruct_step1 import Vec, documents
-import asyncio
-from typing import AsyncIterable, Dict
-from dotenv import load_dotenv
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from starlette.requests import Request
+from typing import AsyncIterable, Dict
 from pydantic import BaseModel
+import asyncio
+
+from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_teddynote.retrievers import KiwiBM25Retriever
 from langchain.retrievers import EnsembleRetriever
-from starlette.requests import Request
 from langchain.callbacks import AsyncIteratorCallbackHandler
-from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from kiwipiepy import Kiwi
+
 from datetime import datetime
+from dotenv import load_dotenv
 import os
 
 app = FastAPI()
@@ -81,7 +84,6 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
     try:
         callback = AsyncIteratorCallbackHandler()
 
-        # Process the message and history
         tok_query, key_nouns = analyze_text(content)
         if not key_nouns:
             key_nouns = tok_query
