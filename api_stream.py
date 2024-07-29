@@ -98,7 +98,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = " ".join([f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
                 history_text = f"Old Question: {chat_history.get('question', '')}"
             else:
                 question = content
@@ -111,7 +111,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = " ".join([f"<Doc{i+1}>. {d} " for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
                 history_text = 'None'
             else:
                 question = content
@@ -130,9 +130,10 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
         template = '''
         이 챗봇은 대구공업고등학교 100년사 책의 내용과 관련된 질문에 답변하는 안내원입니다. 답변은 한국어 높임말을 사용합니다.
         Read chat history to answer follow-up question.
-        이름 옆의 괄호 내용를 이용해 동명이인을 구별하고, 질문에 연관된 동명이인은 모두 답변합니다.
+        이름 옆의 괄호 안 내용을 이용해 동명이인을 구별하고, 질문과 연관된 동명이인은 모두 답변합니다.
         Answer the user's New Question using the following data. Individual docs may or may not be related to the question.
         Don't make up the answer.
+        
 
         Year: {year}
         Chat history:
