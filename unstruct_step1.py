@@ -1,8 +1,7 @@
 from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import TextLoader
 from langchain.docstore.document import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import shutil
 from datetime import datetime
 import os
@@ -20,15 +19,15 @@ for i in range(len(texts)):
 
 class Vec():
     def __init__(self):
-        os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
-        self.openai_embedding = OpenAIEmbeddings(model = "text-embedding-3-small")
+        os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+        self.google_embedding = GoogleGenerativeAIEmbeddings(model = "models/text-embedding-004")
     
     def extractData(self):
         try:
             shutil.rmtree('vector_db', ignore_errors=True)
             self.vector_db = Chroma.from_documents(
                 documents = documents,
-                embedding = self.openai_embedding,
+                embedding = self.google_embedding,
                 persist_directory='vector_db'
             )
         except Exception as e:
