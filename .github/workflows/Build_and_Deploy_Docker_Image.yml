@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: jihyeon2525/daegong_chatbot:latest
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
           docker stop daegong_chatbot || true
           docker rm daegong_chatbot || true
           docker run -d --name daegong_chatbot -p 6677:6677 \
-            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            -e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           exit
         EOF
