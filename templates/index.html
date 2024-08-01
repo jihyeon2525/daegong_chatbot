@@ -112,7 +112,7 @@
         }
 
         .more-content.expanded {
-            max-height: 1500px; /* 적절한 값으로 조정 */
+            max-height: 2000px;
         }
 
         .more-button {
@@ -216,7 +216,7 @@
                         let htmlContent = convertMarkdownToHTML(accumulatedHtmlContent);
                         htmlContent = htmlContent.replace(/\n/g, '<br>');
 
-                        if (accumulatedHtmlContent.length > 500) {
+                        if (accumulatedHtmlContent.length > 300) {
                             fullContent = accumulatedHtmlContent;
                             let moreContentDiv = botMessageDiv.querySelector('.more-content');
                             if (!moreContentDiv) {
@@ -234,6 +234,8 @@
                         } else {
                             botMessageDiv.innerHTML = htmlContent;
                         }
+                        const resultDiv = document.getElementById("result");
+                        resultDiv.scrollTop = resultDiv.scrollHeight;
                         await delay(15);
                     }
                     botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -254,7 +256,7 @@
                 if (isExpanded) {
                     button.textContent = '더보기';
                     moreContentDiv.classList.remove('expanded');
-                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 500)).replace(/\n/g, '<br>');
+                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 300)).replace(/\n/g, '<br>');
                     botMessageDiv.appendChild(moreContentDiv);
                     botMessageDiv.appendChild(button);
                 } else {
