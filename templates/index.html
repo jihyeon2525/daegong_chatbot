@@ -47,6 +47,7 @@
             word-wrap: break-word;
             display: inline-block;
             clear: both;
+            position: relative;
         }
 
         .bot-message {
@@ -102,6 +103,36 @@
             text-decoration: none;
         }
 
+        .more-button {
+            color: #3572aa;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .more-content {
+            visibility: hidden;
+            margin-top: 10px;
+            width: 100%;
+            height: 0;
+            overflow: hidden;
+            transition: height 0.3s ease, visibility 0s 0.3s;
+        }
+
+        .more-content.expanded {
+            visibility: visible;
+            height: auto;
+            max-height: 1000px;
+            transition: height 0.5s ease;
+        }
+
+        .more-button.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
         @keyframes dot-blink {
             0% {
                 opacity: 1;
@@ -129,7 +160,6 @@
         .loading-dots span:nth-child(3) {
             animation-delay: 0.6s;
         }
-        
     </style>
 </head>
 
@@ -139,7 +169,7 @@
         <div id="result"></div>
         <div class="input-container">
             <input type="text" id="message" placeholder="질문을 입력하세요." onkeydown="if (event.key === 'Enter') sendMessage()">
-            <img id="sendButton" src="static//free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
+            <img id="sendButton" src="static/free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
         </div>
         <div class="notice">챗봇은 실수를 할 수 있습니다. 정확한 정보는 원본을 확인해 주세요.</div>
     </div>
@@ -168,19 +198,64 @@
                 const reader = stream.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
+                let isComplete = false;
 
                 while (true) {
                     const { done, value } = await reader.read();
-                    if (done) break;
+                    if (done) {
+                        isComplete = true;
+                        break;
+                    }
                     buffer += decoder.decode(value, { stream: true });
 
                     let htmlContent = convertMarkdownToHTML(buffer);
                     htmlContent = htmlContent.replace(/\n/g, '<br>');
-                    botMessageDiv.innerHTML = htmlContent;
 
-                    botMessageDiv.scrollIntoView();
+                    const sentences = htmlContent.split('.');
+                    const maxSentences = 5;
+                    let contentToDisplay = sentences.slice(0, maxSentences).join('.') + (sentences.length > maxSentences ? '.' : '');
+                    
+                    if (sentences.length > maxSentences) {
+                        const additionalContent = sentences.slice(maxSentences).join('.');
+                        contentToDisplay += `<div class="more-content">${additionalContent}</div>`;
+                        botMessageDiv.innerHTML = `${contentToDisplay}<span class="more-button disabled">더보기</span>`;
+                    } else {
+                        botMessageDiv.innerHTML = contentToDisplay;
+                    }
+                    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+
+                if (isComplete) {
+                    const moreButton = botMessageDiv.querySelector('.more-button');
+                    if (moreButton) {
+                        moreButton.classList.remove('disabled');
+                        moreButton.addEventListener('click', () => toggleMoreContent(moreButton));
+                    }
                 }
             };
+
+            function toggleMoreContent(button) {
+            const moreContentDiv = button.previousElementSibling;
+            const isExpanded = moreContentDiv.classList.contains('expanded');
+            
+            if (isExpanded) {
+                button.textContent = '더보기';
+                moreContentDiv.style.height = `${moreContentDiv.scrollHeight}px`;  // Set to current height for smooth collapse
+                requestAnimationFrame(() => { // Request an animation frame to ensure smooth transition
+                    moreContentDiv.style.height = '0';
+                    moreContentDiv.style.visibility = 'hidden';
+                });
+                setTimeout(() => moreContentDiv.classList.remove('expanded'), 300); // Wait for the animation to finish before removing class
+            } else {
+                button.textContent = '간략히';
+                moreContentDiv.classList.add('expanded');
+                moreContentDiv.style.visibility = 'visible';
+                moreContentDiv.style.height = '0';
+                requestAnimationFrame(() => {
+                    moreContentDiv.style.height = `${moreContentDiv.scrollHeight}px`; // Animate to full height
+                });
+            }
+        }
 
             async function getChatHistory(question) {
                 try {
@@ -190,7 +265,7 @@
                     }
                     const data = await response.json();
                     chatHistory = data;
-                    console.log(chatHistory)
+                    console.log(chatHistory);
                 } catch (error) {
                     console.error('Error fetching chat history:', error);
                 }
@@ -225,7 +300,8 @@
             messageDiv.className = `message ${className}`;
             messageDiv.innerHTML = text;
             resultDiv.appendChild(messageDiv);
-
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            
             return messageDiv;
         }
 
@@ -240,3 +316,4 @@
     </script>
 </body>
 </html>
+
