@@ -30,13 +30,14 @@
 
         #result {
             height: 400px;
-            border-radius: 15px;
-            overflow-y: auto;
+            border-radius: 15px 0 0 15px;
+            overflow-y: scroll;
             border: 1px solid #ccc;
             padding: 10px;
             margin-bottom: 10px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .message {
@@ -103,6 +104,17 @@
             text-decoration: none;
         }
 
+        .more-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            position: relative;
+        }
+
+        .more-content.expanded {
+            max-height: 1500px; /* 적절한 값으로 조정 */
+        }
+
         .more-button {
             color: #3572aa;
             cursor: pointer;
@@ -112,25 +124,9 @@
             margin-top: 10px;
         }
 
-        .more-content {
-            visibility: hidden;
-            margin-top: 10px;
-            width: 100%;
-            height: 0;
-            overflow: hidden;
-            transition: height 0.3s ease, visibility 0s 0.3s;
-        }
-
-        .more-content.expanded {
-            visibility: visible;
-            height: auto;
-            max-height: 1000px;
-            transition: height 0.5s ease;
-        }
-
         .more-button.disabled {
             color: #ccc;
-            cursor: not-allowed;
+            cursor: wait;
         }
 
         @keyframes dot-blink {
@@ -180,6 +176,7 @@
 
     <script>
         let chatHistory = { question: "", docs: "" };
+        let fullContent = '';
 
         async function sendMessage() {
             const messageElement = document.getElementById("message");
@@ -194,11 +191,15 @@
 
             const botMessageDiv = appendMessage('<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>', 'bot-message');
 
+            let accumulatedHtmlContent = '';
+            let isComplete = false;
+
             const handleStreamingResponse = async (stream) => {
                 const reader = stream.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
-                let isComplete = false;
+
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -208,42 +209,61 @@
                     }
                     buffer += decoder.decode(value, { stream: true });
 
-                    let htmlContent = convertMarkdownToHTML(buffer);
-                    htmlContent = htmlContent.replace(/\n/g, '<br>');
+                    while (buffer.length > 0) {
+                        accumulatedHtmlContent += buffer[0];
+                        buffer = buffer.slice(1);
 
-                    const sentences = htmlContent.split('.');
-                    const maxSentences = 5;
-                    let contentToDisplay = sentences.slice(0, maxSentences).join('.') + (sentences.length > maxSentences ? '.' : '');
-                    
-                    if (sentences.length > maxSentences) {
-                        const additionalContent = sentences.slice(maxSentences).join('. ');
-                        contentToDisplay += `<div class="more-content">${additionalContent}</div>`;
-                        botMessageDiv.innerHTML = `${contentToDisplay}<span class="more-button disabled">더보기</span>`;
-                    } else {
-                        botMessageDiv.innerHTML = contentToDisplay;
+                        let htmlContent = convertMarkdownToHTML(accumulatedHtmlContent);
+                        htmlContent = htmlContent.replace(/\n/g, '<br>');
+
+                        if (accumulatedHtmlContent.length > 500) {
+                            fullContent = accumulatedHtmlContent;
+                            let moreContentDiv = botMessageDiv.querySelector('.more-content');
+                            if (!moreContentDiv) {
+                                moreContentDiv = document.createElement('div');
+                                moreContentDiv.className = 'more-content';
+                                botMessageDiv.appendChild(moreContentDiv);
+
+                                const moreButton = document.createElement('div');
+                                moreButton.className = 'more-button';
+                                moreButton.textContent = '더보기';
+                                moreButton.onclick = () => toggleMoreContent(moreButton, botMessageDiv);
+                                botMessageDiv.appendChild(moreButton);
+                            }
+                            moreContentDiv.innerHTML = htmlContent;
+                        } else {
+                            botMessageDiv.innerHTML = htmlContent;
+                        }
+                        await delay(15);
                     }
+                    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
 
                 if (isComplete) {
-                    const moreButton = botMessageDiv.querySelector('.more-button');
-                    if (moreButton) {
-                        moreButton.classList.remove('disabled');
-                        moreButton.addEventListener('click', () => toggleMoreContent(moreButton));
-                    }
+                    sendButton.style.pointerEvents = 'auto';
+                    messageElement.onkeydown = (event) => {
+                        if (event.key === 'Enter') sendMessage();
+                    };
                 }
-
-                botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             };
 
-            function toggleMoreContent(button) {
-                const moreContentDiv = button.previousElementSibling;
+            function toggleMoreContent(button, botMessageDiv) {
+                const moreContentDiv = botMessageDiv.querySelector('.more-content');
                 const isExpanded = moreContentDiv.classList.contains('expanded');
+
                 if (isExpanded) {
                     button.textContent = '더보기';
                     moreContentDiv.classList.remove('expanded');
+                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 500)).replace(/\n/g, '<br>');
+                    botMessageDiv.appendChild(moreContentDiv);
+                    botMessageDiv.appendChild(button);
                 } else {
                     button.textContent = '간략히';
                     moreContentDiv.classList.add('expanded');
+                    moreContentDiv.innerHTML = convertMarkdownToHTML(fullContent).replace(/\n/g, '<br>');
+                    botMessageDiv.innerHTML = '';
+                    botMessageDiv.appendChild(moreContentDiv);
+                    botMessageDiv.appendChild(button);
                 }
             }
 
@@ -290,9 +310,9 @@
             messageDiv.className = `message ${className}`;
             messageDiv.innerHTML = text;
             resultDiv.appendChild(messageDiv);
-            
+
             messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            
+
             return messageDiv;
         }
 
@@ -307,4 +327,3 @@
     </script>
 </body>
 </html>
-

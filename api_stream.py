@@ -139,10 +139,9 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
 
         model = ChatGoogleGenerativeAI(
             model="gemini-1.5-flash",
-            streaming=True,
             callbacks=[callback],
             temperature=0.1,
-            max_tokens=1000
+            max_output_tokens=1000
         )
 
         year = datetime.now().year
