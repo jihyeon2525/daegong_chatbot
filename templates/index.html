@@ -216,13 +216,12 @@
                     let contentToDisplay = sentences.slice(0, maxSentences).join('.') + (sentences.length > maxSentences ? '.' : '');
                     
                     if (sentences.length > maxSentences) {
-                        const additionalContent = sentences.slice(maxSentences).join('.');
+                        const additionalContent = sentences.slice(maxSentences).join('. ');
                         contentToDisplay += `<div class="more-content">${additionalContent}</div>`;
                         botMessageDiv.innerHTML = `${contentToDisplay}<span class="more-button disabled">더보기</span>`;
                     } else {
                         botMessageDiv.innerHTML = contentToDisplay;
                     }
-                    botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
 
                 if (isComplete) {
@@ -232,30 +231,21 @@
                         moreButton.addEventListener('click', () => toggleMoreContent(moreButton));
                     }
                 }
+
+                botMessageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             };
 
             function toggleMoreContent(button) {
-            const moreContentDiv = button.previousElementSibling;
-            const isExpanded = moreContentDiv.classList.contains('expanded');
-            
-            if (isExpanded) {
-                button.textContent = '더보기';
-                moreContentDiv.style.height = `${moreContentDiv.scrollHeight}px`;  // Set to current height for smooth collapse
-                requestAnimationFrame(() => { // Request an animation frame to ensure smooth transition
-                    moreContentDiv.style.height = '0';
-                    moreContentDiv.style.visibility = 'hidden';
-                });
-                setTimeout(() => moreContentDiv.classList.remove('expanded'), 300); // Wait for the animation to finish before removing class
-            } else {
-                button.textContent = '간략히';
-                moreContentDiv.classList.add('expanded');
-                moreContentDiv.style.visibility = 'visible';
-                moreContentDiv.style.height = '0';
-                requestAnimationFrame(() => {
-                    moreContentDiv.style.height = `${moreContentDiv.scrollHeight}px`; // Animate to full height
-                });
+                const moreContentDiv = button.previousElementSibling;
+                const isExpanded = moreContentDiv.classList.contains('expanded');
+                if (isExpanded) {
+                    button.textContent = '더보기';
+                    moreContentDiv.classList.remove('expanded');
+                } else {
+                    button.textContent = '간략히';
+                    moreContentDiv.classList.add('expanded');
+                }
             }
-        }
 
             async function getChatHistory(question) {
                 try {
@@ -300,6 +290,7 @@
             messageDiv.className = `message ${className}`;
             messageDiv.innerHTML = text;
             resultDiv.appendChild(messageDiv);
+            
             messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             
             return messageDiv;
