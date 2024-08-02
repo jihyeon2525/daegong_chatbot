@@ -56,6 +56,8 @@ vector_db = Chroma(
 
 kiwi = Kiwi()
 kiwi.add_user_word('이중웅', 'NNP')
+kiwi.add_user_word('이상호', 'NNP')
+
 def analyze_text(text):
     nouns = []
     key_nouns = []

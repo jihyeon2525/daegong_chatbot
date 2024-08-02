@@ -3,8 +3,12 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대구공업고등학교 100년사 챗봇</title>
     <style>
+        *{
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -30,7 +34,6 @@
 
         #result {
             height: 400px;
-            border-radius: 15px 0 0 15px;
             overflow-y: scroll;
             border: 1px solid #ccc;
             padding: 10px;
@@ -155,6 +158,47 @@
 
         .loading-dots span:nth-child(3) {
             animation-delay: 0.6s;
+        }
+
+        @media screen and (max-width: 768px) {
+            h1{
+                font-size: 5vw;
+            }
+            body{
+                padding: 0 50px;
+            }
+            .chat-container{
+                max-width: unset;
+                height: calc(90vh - 60px);
+                padding-bottom: 60px;
+            }
+            #result{
+                height: 100%;
+            }
+        }
+        @media screen and (max-width: 576px) {
+            body {
+                padding: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #fff;
+                overflow: hidden;
+            }
+            .chat-container{
+                height: 90vh;
+                border-radius: 0;
+                box-shadow: unset;
+                padding-bottom: 60px;
+            }
+            .notice{
+                font-size: 2.7vw;
+            }
+            .attribution{
+                display: none;
+            }
+            #result{
+                height: 100%;
+            }
         }
     </style>
 </head>
