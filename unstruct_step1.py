@@ -20,7 +20,7 @@ for i in range(len(texts)):
 class Vec():
     def __init__(self):
         os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
-        self.google_embedding = GoogleGenerativeAIEmbeddings(model = "models/text-embedding-004")
+        self.google_embedding = GoogleGenerativeAIEmbeddings(model = "models/text-embedding-004", task_type="retrieval_document")
     
     def extractData(self):
         try:

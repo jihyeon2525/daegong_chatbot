@@ -264,6 +264,7 @@
                             fullContent = accumulatedHtmlContent;
                             let moreContentDiv = botMessageDiv.querySelector('.more-content');
                             if (!moreContentDiv) {
+                                botMessageDiv.innerHTML += '...';
                                 moreContentDiv = document.createElement('div');
                                 moreContentDiv.className = 'more-content';
                                 botMessageDiv.appendChild(moreContentDiv);
@@ -300,7 +301,7 @@
                 if (isExpanded) {
                     button.textContent = '더보기';
                     moreContentDiv.classList.remove('expanded');
-                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 300)).replace(/\n/g, '<br>');
+                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 300)).replace(/\n/g, '<br>') + '...';
                     botMessageDiv.appendChild(moreContentDiv);
                     botMessageDiv.appendChild(button);
                 } else {
@@ -315,7 +316,7 @@
 
             async function getChatHistory(question) {
                 try {
-                    const response = await fetch(`https://dg-chatbot.flash21.com/get_chat_history/?question=${encodeURIComponent(question)}`);
+                    const response = await fetch(`/get_chat_history/?question=${encodeURIComponent(question)}`);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -328,7 +329,7 @@
             }
 
             try {
-                const response = await fetch('https://dg-chatbot.flash21.com/stream_chat/', {
+                const response = await fetch('/stream_chat/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: message, chat_history: chatHistory })
