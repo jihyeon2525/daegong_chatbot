@@ -264,6 +264,7 @@
                             fullContent = accumulatedHtmlContent;
                             let moreContentDiv = botMessageDiv.querySelector('.more-content');
                             if (!moreContentDiv) {
+                                botMessageDiv.innerHTML += '...'
                                 moreContentDiv = document.createElement('div');
                                 moreContentDiv.className = 'more-content';
                                 botMessageDiv.appendChild(moreContentDiv);
@@ -300,7 +301,7 @@
                 if (isExpanded) {
                     button.textContent = '더보기';
                     moreContentDiv.classList.remove('expanded');
-                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 300)).replace(/\n/g, '<br>');
+                    botMessageDiv.innerHTML = convertMarkdownToHTML(fullContent.slice(0, 300)).replace(/\n/g, '<br>') + '...';
                     botMessageDiv.appendChild(moreContentDiv);
                     botMessageDiv.appendChild(button);
                 } else {
