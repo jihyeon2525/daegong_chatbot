@@ -5,218 +5,37 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대구공업고등학교 100년사 챗봇</title>
-    <style>
-        *{
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f2f2f2;
-        }
-
-        .chat-container {
-            border-radius: 20px;
-            background-color: white;
-            padding: 20px;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
-
-        #result {
-            height: 400px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .message {
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 15px;
-            max-width: 80%;
-            word-wrap: break-word;
-            display: inline-block;
-            clear: both;
-            position: relative;
-        }
-
-        .bot-message {
-            background-color: #EBF1F5;
-            align-self: flex-start;
-        }
-
-        .user-message {
-            background-color: #5885AF;
-            color: white;
-            align-self: flex-end;
-        }
-
-        #message {
-            width: calc(100% - 50px);
-            padding: 8px;
-            border-radius: 15px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            flex-grow: 1;
-        }
-
-        .input-container {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .input-container img {
-            width: 35px;
-            height: 35px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .notice {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-            margin-top: 5px;
-        }
-
-        .attribution {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .attribution a {
-            color: #888;
-            text-decoration: none;
-        }
-
-        .more-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            position: relative;
-        }
-
-        .more-content.expanded {
-            max-height: 2000px;
-        }
-
-        .more-button {
-            color: #3572aa;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-        }
-
-        .more-button.disabled {
-            color: #ccc;
-            cursor: wait;
-        }
-
-        @keyframes dot-blink {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .loading-dots {
-            display: inline-block;
-        }
-
-        .loading-dots span {
-            animation: dot-blink 1s infinite;
-        }
-
-        .loading-dots span:nth-child(2) {
-            animation-delay: 0.3s;
-        }
-
-        .loading-dots span:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        @media screen and (max-width: 768px) {
-            h1{
-                font-size: 5vw;
-            }
-            body{
-                padding: 0 50px;
-            }
-            .chat-container{
-                max-width: unset;
-                height: calc(90vh - 60px);
-                padding-bottom: 60px;
-            }
-            #result{
-                height: 100%;
-            }
-        }
-        @media screen and (max-width: 576px) {
-            body {
-                padding: 0;
-                width: 100vw;
-                height: 100vh;
-                background: #fff;
-                overflow: hidden;
-            }
-            .chat-container{
-                height: 90vh;
-                border-radius: 0;
-                box-shadow: unset;
-                padding-bottom: 60px;
-            }
-            .notice{
-                font-size: 2.7vw;
-            }
-            .attribution{
-                display: none;
-            }
-            #result{
-                height: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../css/main.css">
 </head>
 
 <body>
+    <header>
+        <div class="logo-wrap">
+            <a href="#">
+                <img class="logo" src="../static/daegong-logo.png">
+                <h1><b>대구공업고등학교</b><br>100년사 챗봇</h1>
+            </a>
+        </div>
+    </header>
     <div class="chat-container">
-        <h1>대구공업고등학교 100년사 챗봇</h1>
-        <div id="result"></div>
+        <div id="result">
+            <h2>안녕하세요. 대구공고 AI챗 <b>대공봇</b>입니다.
+                <img class="hi-icon" src="../static/hi.svg">
+                <br>무엇을 도와드릴까요?
+            </h2>
+        </div>
         <div class="input-container">
             <input type="text" id="message" placeholder="질문을 입력하세요." onkeydown="if (event.key === 'Enter') sendMessage()">
-            <img id="sendButton" src="static/free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
+            <div class="send-btn">
+                <img id="sendButton" src="../static/free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
+            </div>
         </div>
         <div class="notice">챗봇은 실수를 할 수 있습니다. 정확한 정보는 원본을 확인해 주세요.</div>
     </div>
 
-    <div class="attribution">
+    <!-- <div class="attribution">
         <a href="https://www.flaticon.com/kr/free-icons/-" title="종이 비행기 아이콘">종이 비행기 아이콘 제작자: I M Set - Flaticon</a>
-    </div>
+    </div> -->
 
     <script>
         let chatHistory = { question: "", docs: "" };
@@ -319,7 +138,7 @@
 
             async function getChatHistory(question) {
                 try {
-                    const response = await fetch(`https://dg-chatbot.flash21.com/get_chat_history/?question=${encodeURIComponent(question)}`);
+                    const response = await fetch(`http://localhost:6677/get_chat_history/?question=${encodeURIComponent(question)}`);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -332,7 +151,7 @@
             }
 
             try {
-                const response = await fetch('https://dg-chatbot.flash21.com/stream_chat/', {
+                const response = await fetch('http://localhost:6677/stream_chat/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: message, chat_history: chatHistory })

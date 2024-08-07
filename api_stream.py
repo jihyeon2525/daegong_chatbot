@@ -35,6 +35,8 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name = "static")
+app.mount("/font", StaticFiles(directory="font"), name = "font")
+app.mount("/css", StaticFiles(directory="css"), name = "css")
 
 load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
