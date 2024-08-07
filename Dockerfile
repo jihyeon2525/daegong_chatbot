@@ -6,6 +6,9 @@ COPY 대구공고전문.txt api_stream.py unstruct_step1.py requirements.txt /ap
 COPY vector_db /app/vector_db
 COPY templates /app/templates
 COPY static /app/static
+COPY css /app/css
+COPY font /app/font
+
 
 RUN apt-get update && \
     apt-get install -y openjdk-17-jdk build-essential gcc libpq-dev && \
