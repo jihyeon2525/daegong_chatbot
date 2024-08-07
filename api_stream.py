@@ -55,9 +55,11 @@ vector_db = Chroma(
 )
 
 kiwi = Kiwi()
-kiwi.add_user_word('이중웅', 'NNP')
-kiwi.add_user_word('이상호', 'NNP')
-kiwi.add_user_word('권인혁', 'NNP')
+user_words = ['이중웅', '이상호', '권인혁', '장수용', '강창오', '도상기']
+
+for word in user_words:
+    kiwi.add_user_word(word, 'NNP')
+
 def analyze_text(text):
     nouns = []
     key_nouns = []
@@ -153,7 +155,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
         year = datetime.now().year
 
         template = '''
-        당신은 대구공업고등학교 100년사에 대한 내용과 사람들에 관련된 질문에 답변하는 안내원입니다. 답변은 한국어 높임말을 사용합니다.
+        당신은 대구공업고등학교 100년사에 대한 안내를 맡은 대공봇입니다. 답변은 한국어 높임말을 사용합니다.
 
         New Question: {question}
         Data(fractions of book): {context}
