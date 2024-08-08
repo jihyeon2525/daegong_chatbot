@@ -309,8 +309,6 @@ header .logo-wrap h1::after{
 @media screen and (max-width: 768px) {
   .chat-container h2 {
     font-size: 4vw;
-    padding-bottom: 58px;
-    box-sizing: border-box;
     height: 11vw;
 
   }
@@ -342,9 +340,7 @@ header .logo-wrap h1::after{
   }
 
   .chat-container{
-    padding-bottom: 58px;
-    box-sizing: border-box;
-    height: calc(100% - 116px);
+    height: calc(100% - 58px);
   }
 
   .notice {
