@@ -6,6 +6,17 @@
   src: url('../font/PretendardVariable.woff2') format('woff2');
 }
 
+:root {
+  --vh: 100vh;
+}
+
+/* dvh를 지원하는 브라우저에서만 적용(동적vh) */
+@supports (height: 100dvh) {
+  :root {
+    --vh: 100dvh;
+  }
+}
+
 * {
   box-sizing: border-box;
   color: #333;
@@ -23,7 +34,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: var(--vh);
   background: #f9f9f9;
 }
 
