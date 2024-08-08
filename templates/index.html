@@ -25,7 +25,7 @@
             </h2>
         </div>
         <div class="input-container">
-            <input type="text" id="message" placeholder="질문을 입력하세요." onkeydown="if (event.key === 'Enter') sendMessage()">
+            <input type="text" id="message" placeholder="" onkeydown="if (event.key === 'Enter') sendMessage()">
             <div class="send-btn">
                 <img id="sendButton" src="../static/free-icon-send-17140046.png" onclick="sendMessage()" alt="Send Icon">
             </div>
@@ -38,6 +38,67 @@
     </div> -->
 
     <script>
+        String.prototype.toKorChars = function() {
+            var cCho = [ 'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ' ], 
+            cJung = [ 'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ' ], 
+            cJong = [ '', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ' ], cho, jung, jong; 
+            var str = this, 
+            cnt = str.length, 
+            chars = [], 
+            cCode; 
+            for (var i = 0; i < cnt; i++) { 
+                cCode = str.charCodeAt(i); 
+                if (cCode == 32) { 
+                    chars.push(" ");
+                    continue;
+                } 
+                if (cCode < 0xAC00 || cCode > 0xD7A3) { 
+                    chars.push(str.charAt(i)); 
+                    continue; 
+                } 
+                cCode = str.charCodeAt(i) - 0xAC00; 
+                jong = cCode % 28; 
+                jung = ((cCode - jong) / 28 ) % 21 
+                cho = (((cCode - jong) / 28 ) - jung ) / 21 
+                chars.push(cCho[cho]);
+                chars.push(String.fromCharCode( 44032 + (cho * 588) + (jung  * 28)));
+                if (cJong[jong] !== '') { 
+                    chars.push(String.fromCharCode( 44032 + (cho * 588) + (jung  * 28) + jong ));
+                }
+            } 
+            return chars; 
+        }
+
+        var result = "질문을 입력하세요.";
+        var typing1 = [];
+        result = result.split('');
+
+        for (var i = 0; i < result.length; i++) {
+            typing1[i] = result[i].toKorChars();
+        }
+
+        var inputField = document.getElementById("message");
+        var text = "";
+        var i = 0; 
+        var j = 0; 
+        var imax = typing1.length;
+        var inter = setInterval(typi, 100);
+
+        function typi() {
+            if (i <= imax - 1) {
+                var jmax = typing1[i].length;
+                inputField.placeholder = text + typing1[i][j];
+                j++;
+                if (j == jmax) {
+                    text += typing1[i][j - 1];
+                    i++;
+                    j = 0;
+                }
+            } else {
+                clearInterval(inter);
+            }
+        }
+        
         let chatHistory = { question: "", docs: "" };
         let fullContent = '';
 
@@ -138,7 +199,7 @@
 
             async function getChatHistory(question) {
                 try {
-                    const response = await fetch(`https://dg-chatbot.flash21.com/get_chat_history/?question=${encodeURIComponent(question)}`);
+                    const response = await fetch(`/get_chat_history/?question=${encodeURIComponent(question)}`);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -151,7 +212,7 @@
             }
 
             try {
-                const response = await fetch('https://dg-chatbot.flash21.com/stream_chat/', {
+                const response = await fetch('/stream_chat/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: message, chat_history: chatHistory })
