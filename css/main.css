@@ -130,7 +130,7 @@ header .logo-wrap h1::after{
   align-self: flex-start;
   border-radius: 0 15px 15px 15px;
   margin: 24px 0px 22px 19px;
-  min-width: 75px;
+  min-width: 60px;
 }
 
 .bot-message::after {
@@ -234,6 +234,7 @@ header .logo-wrap h1::after{
   color: #888;
   text-align: center;
   margin: 5px 0;
+  margin-bottom: 15px;
   flex-shrink: 0;
 }
 
@@ -290,8 +291,8 @@ header .logo-wrap h1::after{
 
 .loading-dots {
   display: flex;
+  font-size: 9px;
   justify-content: space-around;
-  font-size: 11px;
 }
 
 .loading-dots span {
@@ -309,7 +310,7 @@ header .logo-wrap h1::after{
 @media screen and (max-width: 768px) {
   .chat-container h2 {
     font-size: 4vw;
-    height: calc(100vh - 85px);
+    height: 11vw;
   }
 
   .chat-container h2 .hi-icon {
@@ -339,10 +340,11 @@ header .logo-wrap h1::after{
   }
 
   .chat-container{
-    height: calc(100vh - 85px);
+    height: calc(100% - 58px);
   }
 
   .notice {
     font-size: 2.7vw;
+    margin-bottom: 15px;
   }
 }
