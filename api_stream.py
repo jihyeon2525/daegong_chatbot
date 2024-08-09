@@ -57,10 +57,14 @@ vector_db = Chroma(
 )
 
 kiwi = Kiwi()
-user_words = ['이중웅', '이창호', '이상호', '권인혁', '장수용', '강창오', '도상기', '도병무']
+user_nnp = ['이중웅', '이창호', '이상호', '권인혁', '장수용', '강창오', '도상기', '도병무']
+user_nng = ['교가']
 
-for word in user_words:
+for word in user_nnp:
     kiwi.add_user_word(word, 'NNP')
+
+for word in user_nng:
+    kiwi.add_user_word(word, 'NNG')
 
 def analyze_text(text):
     nouns = []
