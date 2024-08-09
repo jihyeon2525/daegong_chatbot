@@ -137,7 +137,8 @@ header .logo-wrap h1::after{
 }
 
 .bot-message {
-  background-color: #e5f2ff;
+  background-color: #1d2088;
+  color: white;
   align-self: flex-start;
   border-radius: 0 15px 15px 15px;
   margin: 24px 0px 22px 19px;

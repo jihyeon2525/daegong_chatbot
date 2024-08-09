@@ -19,7 +19,7 @@
     </header>
     <div class="chat-container">
         <div id="result">
-            <h2>안녕하세요. 대구공고 AI챗 <b>대공봇</b>입니다.
+            <h2>안녕하세요.<br>대구공고 AI챗 <b>대공봇</b>입니다.
                 <img class="hi-icon" src="../static/hi.svg">
                 <br>무엇을 도와드릴까요?
             </h2>
@@ -248,7 +248,7 @@
 
         function convertMarkdownToHTML(text) {
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+            text = text.replace(/^## (.*?)$/gm, '<h4>$1</h4>');
             return text;
         }
 
