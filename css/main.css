@@ -91,7 +91,7 @@ header .logo-wrap h1::after{
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 20px;
+  padding: 0 10px;
   height: calc(100% - 85px);
 }
 
@@ -99,10 +99,12 @@ header .logo-wrap h1::after{
   margin: 5vh 0px 3vh;
   font-weight: 600;
   flex-shrink: 0;
+  font-size: 35px;
 }
 
 .chat-container h2 b {
-  color: #002ED9;
+  color: #143bc5d5;
+  font-size: inherit;
 }
 
 .chat-container h2 .hi-icon {
@@ -137,12 +139,12 @@ header .logo-wrap h1::after{
 }
 
 .bot-message {
-  background-color: #1d2088;
+  background-color: #2d31a1d7;
   color: white;
   align-self: flex-start;
   border-radius: 0 15px 15px 15px;
   margin: 24px 0px 22px 19px;
-  min-width: 60px;
+  min-width: 70px;
 }
 
 .bot-message::after {
@@ -152,7 +154,7 @@ header .logo-wrap h1::after{
   height: 40px;
   border-radius: 50%;
   background: url(../static/daegong-logo.png) #fff no-repeat 50% 40%;
-  border: 2px solid #e5f2ff;
+  border: 2px solid #2d31a1d7;
   background-size: 80%;
   position: absolute;
   top: -24px;
@@ -162,7 +164,9 @@ header .logo-wrap h1::after{
 .bot-message::before {
   display: block;
   content: '대공봇';
-  font-size: 12px;
+  font-weight: 500;
+  color: black;
+  font-size: 14px;
   line-height: 20px;
   height: 20px;
   position: absolute;
@@ -267,6 +271,7 @@ header .logo-wrap h1::after{
   overflow: hidden;
   transition: max-height 0.3s ease-out;
   position: relative;
+  color: white;
 }
 
 .more-content.expanded {
@@ -274,7 +279,7 @@ header .logo-wrap h1::after{
 }
 
 .more-button {
-  color: #002ED9;
+  color: rgba(215, 218, 248, 0.63);
   cursor: pointer;
   text-align: center;
   font-weight: bold;
@@ -305,10 +310,12 @@ header .logo-wrap h1::after{
   display: flex;
   font-size: 9px;
   justify-content: space-around;
+  color: white;
 }
 
 .loading-dots span {
   animation: dot-blink 1s infinite;
+  color: inherit;
 }
 
 .loading-dots span:nth-child(2) {
