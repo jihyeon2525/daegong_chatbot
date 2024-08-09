@@ -116,7 +116,7 @@ header .logo-wrap h1::after{
 #result {
   height: 100%; 
   overflow-y: scroll;
-  padding: 0px 30px;
+  padding: 0px 10px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -126,6 +126,7 @@ header .logo-wrap h1::after{
 #result::-webkit-scrollbar {
   display: none;
 }
+
 .message {
   margin-bottom: 22px;
   padding: 15px 12px;
@@ -330,7 +331,7 @@ header .logo-wrap h1::after{
 
 @media screen and (max-width: 768px) {
   .chat-container h2 {
-    font-size: 5vw;
+    font-size: 5.5vw;
     height: 11vw;
   }
 
@@ -365,7 +366,7 @@ header .logo-wrap h1::after{
   }
 
   .chat-container h2 {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .notice {
