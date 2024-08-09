@@ -12,9 +12,10 @@ COPY font /app/font
 RUN apt-get update && \
     apt-get install -y curl && \
     curl https://sh.rustup.rs -sSf | sh -s -- -y && \
-    source $HOME/.cargo/env && \
     apt-get install -y openjdk-17-jdk build-essential gcc libpq-dev && \
     apt-get clean
+
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
