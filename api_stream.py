@@ -78,9 +78,9 @@ def analyze_text(text):
             key_nouns.append(nouns[-1])
     return nouns, key_nouns
 
-kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=5)
+kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=6)
 #bm25_retriever = BM25Retriever.from_documents(documents, k=4)
-embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 2})
 ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
 
 global_chat_history = []
