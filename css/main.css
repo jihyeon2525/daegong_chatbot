@@ -318,6 +318,8 @@ header .logo-wrap h1::after{
   font-size: 9px;
   justify-content: space-around;
   color: white;
+  height: 25px;
+  align-items: center;
 }
 
 .loading-dots span {
