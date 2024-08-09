@@ -9,8 +9,10 @@ COPY static /app/static
 COPY css /app/css
 COPY font /app/font
 
-
 RUN apt-get update && \
+    apt-get install -y curl && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y && \
+    source $HOME/.cargo/env
     apt-get install -y openjdk-17-jdk build-essential gcc libpq-dev && \
     apt-get clean
 
