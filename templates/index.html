@@ -247,7 +247,9 @@
         }
 
         function convertMarkdownToHTML(text) {
-            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+            return text;
         }
 
         window.onload = () => {
