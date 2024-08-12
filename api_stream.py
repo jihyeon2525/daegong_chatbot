@@ -57,7 +57,7 @@ vector_db = Chroma(
 )
 
 kiwi = Kiwi()
-user_nnp = ['이중웅', '이창호', '이상호', '이재순', '권인혁', '장수용', '강창오', '도상기', '도병무']
+user_nnp = ['이중웅', '이창호', '이상호', '이재순', '이두형', '임종호', '권인혁', '장수용', '강창오', '도상기', '도병무', '송방차랑']
 user_nng = ['교가']
 
 for word in user_nnp:
@@ -169,11 +169,11 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
 
         You must follow instructions below:
         1. Answer the New Question within 400 characters based on Data provided. 
-        2. People with same name
+        2. People with same name. (cf. 임성화 and 김성화 are two different people because they have different surname.)
             - Differentiate namesakes by content within parenthesis or just by context.
             - Your response should contain one paragraph (under 100 characters) for each people.
-        3. There might be typos in New Question. You should ask user if they meant it if it occurs. 질문의 단어와 정확히 일치하는 단어에 대한 자료를 사용하세요.
-        4. Each Docs have main topic on the top. Each docs contain content about main topic.
+        3. There might be typos in New Question. You should ask user if they meant it if it occurs. 질문의 단어와 정확히 일치하는 이름이나 단어에 대한 자료를 사용하세요.
+        4. Each Doc has its title or topic on the top.
         5. Usage of Chat history
             - If New Question has demonstrative pronouns, or says "자세히 알려줘", use Chat History.
             - Chat history: {history_text}
