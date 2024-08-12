@@ -38,6 +38,8 @@
     </div> -->
 
     <script>
+        //콘솔로그 가리기
+        //console.log = () => {}
         String.prototype.toKorChars = function() {
             var cCho = [ 'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ' ], 
             cJung = [ 'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ' ], 
@@ -248,7 +250,7 @@
 
         function convertMarkdownToHTML(text) {
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/^## (.*?)$/gm, '<h4>$1</h4>');
+            text = text.replace(/^## (.*?)$/gm, '<span style="font-size: 22px; font-weight:600; color: white;">$1</span>');
             return text;
         }
 
