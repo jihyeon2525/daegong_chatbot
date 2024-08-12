@@ -38,6 +38,13 @@
     </div> -->
 
     <script>
+        function reloadPage() {
+            location.reload();
+        }
+
+        document.querySelector(".logo").addEventListener("click", reloadPage);
+        document.querySelector("h1").addEventListener("click", reloadPage);
+
         //콘솔로그 가리기
         //console.log = () => {}
         String.prototype.toKorChars = function() {
