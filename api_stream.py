@@ -110,7 +110,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
                 if len(filtered_docs) == 0:
                     doc_scores = []
                     for document in documents:
@@ -120,7 +120,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                             doc_scores.append((page, keyword_count))
                     doc_scores.sort(key=lambda x: x[1], reverse=True)
                     filtered_docs_list = [doc for doc, _ in doc_scores[:5]]
-                    filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(filtered_docs_list)])
+                    filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(filtered_docs_list)])
                     if len(filtered_docs) == 0:
                         filtered_docs = 'None'
                 history_text = f"Old Question: {chat_history.get('question', '')}"
@@ -135,7 +135,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                 new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
-                filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
+                filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
                 if len(filtered_docs) == 0:
                     doc_scores = []
                     for document in documents:
@@ -145,7 +145,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                             doc_scores.append((page, keyword_count))
                     doc_scores.sort(key=lambda x: x[1], reverse=True)
                     filtered_docs_list = [doc for doc, _ in doc_scores[:5]]
-                    filtered_docs = "\n".join([f"<Doc{i+1}>. {d}" for i, d in enumerate(filtered_docs_list)])
+                    filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(filtered_docs_list)])
                     if len(filtered_docs) == 0:
                         filtered_docs = 'None'
                 history_text = 'None'
