@@ -125,6 +125,7 @@
             const botMessageDiv = appendMessage('<div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>', 'bot-message');
 
             let accumulatedHtmlContent = '';
+            let fullContent = '';
             let isComplete = false;
 
             const handleStreamingResponse = async (stream) => {
@@ -164,7 +165,7 @@
                                 const moreButton = document.createElement('div');
                                 moreButton.className = 'more-button';
                                 moreButton.textContent = '더보기';
-                                moreButton.onclick = () => toggleMoreContent(moreButton, botMessageDiv);
+                                moreButton.onclick = () => toggleMoreContent(moreButton, botMessageDiv, fullContent);
                                 botMessageDiv.appendChild(moreButton);
                             }
                             moreContentDiv.innerHTML = htmlContent;
@@ -186,7 +187,7 @@
                 }
             };
 
-            function toggleMoreContent(button, botMessageDiv) {
+            function toggleMoreContent(button, botMessageDiv, fullContent) {
                 const moreContentDiv = botMessageDiv.querySelector('.more-content');
                 const isExpanded = moreContentDiv.classList.contains('expanded');
 
