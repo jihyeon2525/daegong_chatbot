@@ -33,8 +33,8 @@ class Vec():
         except Exception as e:
             return e
 
-"""#내용 업데이트 시 실행       
-vec = Vec()
+#내용 업데이트 시 실행       
+"""vec = Vec()
 errmsg = vec.extractData()
 if errmsg:
     print(errmsg)
