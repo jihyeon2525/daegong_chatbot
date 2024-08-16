@@ -84,7 +84,7 @@ def analyze_text(text):
 kbm25_retriever = KiwiBM25Retriever.from_documents(documents, k=6)
 #bm25_retriever = BM25Retriever.from_documents(documents, k=4)
 embed_retriever = vector_db.as_retriever(search_type="similarity", search_kwargs={"k": 2})
-ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
+#ensemble_retriever = EnsembleRetriever(retrievers=[kbm25_retriever, embed_retriever], weights=[0.5, 0.5])
 
 global_chat_history = []
 
@@ -102,16 +102,16 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
         tok_query, key_nouns = analyze_text(content)
         if not key_nouns:
             key_nouns = tok_query
-
+        embed_docs = embed_retriever.invoke(content)
         if chat_history.get('question'):
             if tok_query:
                 question = ' '.join(tok_query)
-                docs = ensemble_retriever.invoke(question)
-                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
+                bm_docs = kbm25_retriever.invoke(question)
+                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in (embed_docs + bm_docs)))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
                 filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
-                if len(filtered_docs) == 0:
+                if len(filtered_docs) <= 2:
                     doc_scores = []
                     for document in documents:
                         page = document.page_content.replace('\t', ' ')
@@ -119,7 +119,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                         if keyword_count > 0:
                             doc_scores.append((page, keyword_count))
                     doc_scores.sort(key=lambda x: x[1], reverse=True)
-                    filtered_docs_list = [doc for doc, _ in doc_scores[:5]]
+                    filtered_docs_list.append([doc for doc, _ in doc_scores[:5]])
                     filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(filtered_docs_list)])
                     if len(filtered_docs) == 0:
                         filtered_docs = 'None'
@@ -131,12 +131,12 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
         else:
             if tok_query:
                 question = ' '.join(tok_query)
-                docs = ensemble_retriever.invoke(question)
-                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in docs))
+                bm_docs = kbm25_retriever.invoke(question)
+                new_docs = list(set(doc.page_content.replace('\t', ' ') for doc in (embed_docs + bm_docs)))
                 if not new_docs:
                     raise NoDocumentsRetrievedError("No documents retrieved.")
                 filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(new_docs) if any(word in d for word in key_nouns)])
-                if len(filtered_docs) == 0:
+                if len(filtered_docs) <= 2:
                     doc_scores = []
                     for document in documents:
                         page = document.page_content.replace('\t', ' ')
@@ -144,7 +144,7 @@ async def send_message(content: str, chat_history: Dict[str, str]) -> AsyncItera
                         if keyword_count > 0:
                             doc_scores.append((page, keyword_count))
                     doc_scores.sort(key=lambda x: x[1], reverse=True)
-                    filtered_docs_list = [doc for doc, _ in doc_scores[:5]]
+                    filtered_docs_list.append([doc for doc, _ in doc_scores[:5]])
                     filtered_docs = "\n".join([f"{i+1}. {d}" for i, d in enumerate(filtered_docs_list)])
                     if len(filtered_docs) == 0:
                         filtered_docs = 'None'
