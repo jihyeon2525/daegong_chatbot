@@ -3,7 +3,6 @@ from langchain_community.document_loaders import TextLoader
 from langchain.docstore.document import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import shutil
-from datetime import datetime
 import os
 from dotenv import load_dotenv
 
